@@ -6,7 +6,7 @@
 /*   By: raaga <raaga@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/02 06:27:10 by brhajji-          #+#    #+#             */
-/*   Updated: 2023/03/02 20:12:41 by raaga            ###   ########.fr       */
+/*   Updated: 2023/03/03 17:05:21 by raaga            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,16 +134,15 @@ void 	Server::signal_handler(int) {
 
 
 
-// void	Server::bot(std::string std) {
-// 	std::string response = "BOT : un nouvelle utilasateur s'est connecter au serveur\n\n\n ";
-	
-// 	for (std::map<std::string, User *>::iterator it = this->_users.begin(); it != this->_users.end(); it++) {
-// 			//send(it->second->getFd(), response.c_str(), response.length(), 0);
-// 			if (it->second->getFd())
-// 				it->second->writeMessage(response+" son nom est : " + std);
-// 	}
-// 	return ;
-// }
+void	Server::bot(std::string std) {
+	std::string response = "BOT : un nouvelle utilasateur s'est connecter au serveur\n\n\n ";
+	for (std::map<std::string, User *>::iterator it = this->_users.begin(); it != this->_users.end(); it++) {
+			//send(it->second->getFd(), response.c_str(), response.length(), 0);
+			if (it->second->getFd() && it->second->getBot() == true)
+				it->second->writeMessage(response+" son nom est : " + std);
+	}
+	return ;
+}
 
 void	Server::BuildServer()
 {
@@ -216,7 +215,9 @@ void	Server::BuildServer()
 			}
 			else if (events[i].events == EPOLLIN)//si l'event concerne un user qu'on a deja ajouter a epoll
 			{
+				std::cout << "lalalalalalal " << buffer[0] << std::endl;
 				tmp = recv(events[i].data.fd, buffer, sizeof(buffer), 0);
+				
 				if (tmp <= 0)
 				{
 					std::cout << "Connection closed by client." << std::endl;
@@ -232,6 +233,7 @@ void	Server::BuildServer()
 					buffer[tmp] = 0;
 					User *user = NULL;
 					str = buffer;
+					if (str.find("bot") != std::string::npos) { std::cout << "kaskjfghjgaj fgjsadgjhfg sdhfg gsdhfgjgads\n" ;}
 					int x = 1;
 					std::cout<<str<<std::endl;
 					//std::cout<<"<+++++++++++++++++++->"<<'\n'<<buffer<<"<+++++++++++++++++++>"<<'\n'<<'\n';
@@ -347,7 +349,21 @@ int    Server::user(Command cmd, User *user, struct epoll_event event, int rc, i
 	(void)num_event;
 	user->setUsername(user->getNickname());
 	user->setFullname(cmd.getFName());
+	bot(user->getUsername());
 	return 1;
+}
+
+int	Server::bot_bool(Command cmd, User *user, struct epoll_event event, int rc, int *num_event) {
+	(void)event;
+	(void)rc;
+	(void)num_event;
+	
+	std::cout << "jsuissss dedans " << std::endl;
+	if(cmd.getParameters().size() > 1 && cmd.getParameters().size() < 3){
+		std::vector<std::string> tmp = cmd.getParameters();
+		user->setBot(tmp[0]);
+	}
+	return (1);
 }
 
 int    Server::nick(Command cmd, User *user, struct epoll_event event, int rc, int *num_event) {
@@ -850,8 +866,8 @@ int  Server::kill(Command cmd, User *user, struct epoll_event event, int rc, int
 int	Server::executee_cmd(Command cmd, User *user, struct epoll_event event, int rc, int *num_event)
 {
 	std::string response;
-	std::string forName[15] = {"PING", "PONG", "CAP", "PASS", "NICK", "USER", "QUIT", "PART", "JOIN", "OPER", "WHOIS", "MODE", "PRIVMSG", "NOTICE", "kill"};
-    int  (Server::*ptr_fct[15])(Command cmd, User *user, struct epoll_event event, int rc, int *num_event) = {&Server::ping,
+	std::string forName[16] = {"PING", "PONG", "CAP", "PASS", "NICK", "USER", "QUIT", "PART", "JOIN", "OPER", "WHOIS", "MODE", "PRIVMSG", "NOTICE", "bot", "kill"};
+    int  (Server::*ptr_fct[16])(Command cmd, User *user, struct epoll_event event, int rc, int *num_event) = {&Server::ping,
 													&Server::pong,
 													&Server::cap,
 													&Server::pass,
@@ -865,9 +881,10 @@ int	Server::executee_cmd(Command cmd, User *user, struct epoll_event event, int 
 													&Server::mode,
 													&Server::privMsg,
 													&Server::notice,
+													&Server::bot_bool,
 													&Server::kill,
 													};
-	for (int i = 0; i < 16; i++)
+	for (int i = 0; i < 17; i++)
 	{
 		if (cmd.getName() == forName[i]) {
 			

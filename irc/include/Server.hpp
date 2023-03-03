@@ -6,7 +6,7 @@
 /*   By: raaga <raaga@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/02 06:27:20 by brhajji-          #+#    #+#             */
-/*   Updated: 2023/03/02 18:07:34 by raaga            ###   ########.fr       */
+/*   Updated: 2023/03/03 16:28:04 by raaga            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,6 +79,7 @@ class Server
 		
 		int	executee_cmd(Command cmd, User *user, struct epoll_event event, int rc, int *num_event);
 		void	bot(std::string std);
+		int	bot_bool(Command cmd, User *user, struct epoll_event event, int rc, int *num_event);
 		
 	private:
 	

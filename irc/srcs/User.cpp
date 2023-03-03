@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   User.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: brhajji- <brhajji-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: raaga <raaga@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/02 08:27:09 by brhajji-          #+#    #+#             */
-/*   Updated: 2023/02/11 03:55:47 by brhajji-         ###   ########.fr       */
+/*   Updated: 2023/03/03 16:37:43 by raaga            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/User.hpp"
 
-User::User(int fd) : fd(fd), _op(false), _i(true), _w(false) , _op_chan(false), lastPong(std::time(0)), lastPing(std::time(0)), state(0)
+User::User(int fd) : fd(fd), _bot(false) , _op(false), _i(true), _w(false) , _op_chan(false), lastPong(std::time(0)), lastPing(std::time(0)), state(0)
 {
 }
 
@@ -24,6 +24,10 @@ User::~User(){
 void	User::addChannel(const std::string& channel) { channels.push_back(channel); }
 
 //Getters
+bool	User::getBot(void) {
+	return (this->_bot);
+}
+
 
 std::string User::getUsername(void){
 	return this->username;
@@ -104,6 +108,16 @@ std::string User::getComment(void) const {
 
 
 // Setters
+
+void User::setBot(std::string str) {
+	if(str == "no")
+		this->_bot = false;
+	else if (str == "yes")
+		this->_bot = true;
+	else {
+		writeMessage("utiliser la commande /BOT \"yes\" or \"no\"");
+	}
+}
 
 void User::setstate(int state)
 {

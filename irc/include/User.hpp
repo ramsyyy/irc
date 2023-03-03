@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   User.hpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abahmani <abahmani@student.42.fr>          +#+  +:+       +#+        */
+/*   By: raaga <raaga@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/02 08:27:12 by brhajji-          #+#    #+#             */
-/*   Updated: 2023/02/11 03:20:48 by abahmani         ###   ########.fr       */
+/*   Updated: 2023/03/03 16:16:24 by raaga            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ class User
 		std::string						fullname;
 		std::string						_channel;
 		std::string						comment;
+		bool							_bot;
 		bool							_op;
 		bool							_i;
 		bool							_w;
@@ -43,6 +44,7 @@ class User
 		~User();
 
 		//Getters
+		bool		getBot(void);
 		int			getFd(void);
 		std::string getUsername(void);
 		std::string getNickname(void);
@@ -59,7 +61,7 @@ class User
 		bool		get_v_chan(void) const;
 		std::string getComment(void) const;
 		
-
+		void setBot(std::string str);
 		void setUsername(std::string);
 		void setPong(time_t);
 		void setPing(time_t);
