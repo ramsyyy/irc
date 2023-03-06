@@ -6,7 +6,7 @@
 /*   By: raaga <raaga@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/02 06:27:10 by brhajji-          #+#    #+#             */
-/*   Updated: 2023/03/03 17:05:21 by raaga            ###   ########.fr       */
+/*   Updated: 2023/03/06 15:44:53 by raaga            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -233,7 +233,6 @@ void	Server::BuildServer()
 					buffer[tmp] = 0;
 					User *user = NULL;
 					str = buffer;
-					if (str.find("bot") != std::string::npos) { std::cout << "kaskjfghjgaj fgjsadgjhfg sdhfg gsdhfgjgads\n" ;}
 					int x = 1;
 					std::cout<<str<<std::endl;
 					//std::cout<<"<+++++++++++++++++++->"<<'\n'<<buffer<<"<+++++++++++++++++++>"<<'\n'<<'\n';
@@ -361,7 +360,8 @@ int	Server::bot_bool(Command cmd, User *user, struct epoll_event event, int rc, 
 	std::cout << "jsuissss dedans " << std::endl;
 	if(cmd.getParameters().size() > 1 && cmd.getParameters().size() < 3){
 		std::vector<std::string> tmp = cmd.getParameters();
-		user->setBot(tmp[0]);
+		std::cout << "lalalal " << tmp[1] << std::endl;
+		user->setBot(tmp[1]);
 	}
 	return (1);
 }
@@ -390,8 +390,17 @@ int    Server::privMsg(Command cmd, User *user, struct epoll_event event, int rc
 	(void)rc;
 	(void)num_event;
 	std::string response;
-    if (cmd.getParameters().size() > 1 && cmd.getParameters()[0][0] == '#')//msg to channel
-		sendToChan(cmd, user);
+	if (cmd.getParameters().size() > 1 && cmd.getParameters()[0] == "bot") {
+		bot_bool(cmd, user, event, rc, num_event);
+	}
+    if (cmd.getParameters().size() > 1 && cmd.getParameters()[0][0] == '#') {//msg to channel
+		if (cmd.getParameters().size() > 1 && cmd.getParameters()[0] == "#bot") {
+			bot_bool(cmd, user, event, rc, num_event);
+			return (1);
+		}
+		else
+			sendToChan(cmd, user);
+	}
 	else if (cmd.getParameters().size() > 1 && cmd.getParameters()[0][0] != '#') //msg to user
 	{
 		if (_users.find(cmd.getParameters()[0]) != _users.end())
@@ -866,8 +875,8 @@ int  Server::kill(Command cmd, User *user, struct epoll_event event, int rc, int
 int	Server::executee_cmd(Command cmd, User *user, struct epoll_event event, int rc, int *num_event)
 {
 	std::string response;
-	std::string forName[16] = {"PING", "PONG", "CAP", "PASS", "NICK", "USER", "QUIT", "PART", "JOIN", "OPER", "WHOIS", "MODE", "PRIVMSG", "NOTICE", "bot", "kill"};
-    int  (Server::*ptr_fct[16])(Command cmd, User *user, struct epoll_event event, int rc, int *num_event) = {&Server::ping,
+	std::string forName[15] = {"PING", "PONG", "CAP", "PASS", "NICK", "USER", "QUIT", "PART", "JOIN", "OPER", "WHOIS", "MODE", "PRIVMSG", "NOTICE", "kill"};
+    int  (Server::*ptr_fct[15])(Command cmd, User *user, struct epoll_event event, int rc, int *num_event) = {&Server::ping,
 													&Server::pong,
 													&Server::cap,
 													&Server::pass,
@@ -881,10 +890,9 @@ int	Server::executee_cmd(Command cmd, User *user, struct epoll_event event, int 
 													&Server::mode,
 													&Server::privMsg,
 													&Server::notice,
-													&Server::bot_bool,
 													&Server::kill,
 													};
-	for (int i = 0; i < 17; i++)
+	for (int i = 0; i < 16; i++)
 	{
 		if (cmd.getName() == forName[i]) {
 			

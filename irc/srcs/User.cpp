@@ -6,7 +6,7 @@
 /*   By: raaga <raaga@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/02 08:27:09 by brhajji-          #+#    #+#             */
-/*   Updated: 2023/03/03 16:37:43 by raaga            ###   ########.fr       */
+/*   Updated: 2023/03/06 15:39:28 by raaga            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,9 +110,10 @@ std::string User::getComment(void) const {
 // Setters
 
 void User::setBot(std::string str) {
-	if(str == "no")
+	std::cout << "popopoppo " << str   << std::endl;
+	if(str == ":no")
 		this->_bot = false;
-	else if (str == "yes")
+	else if (str == ":yes")
 		this->_bot = true;
 	else {
 		writeMessage("utiliser la commande /BOT \"yes\" or \"no\"");
