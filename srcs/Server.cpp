@@ -6,7 +6,7 @@
 /*   By: raaga <raaga@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/02 06:27:10 by brhajji-          #+#    #+#             */
-/*   Updated: 2023/03/16 20:37:46 by raaga            ###   ########.fr       */
+/*   Updated: 2023/03/17 16:22:53 by raaga            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -410,16 +410,15 @@ int    Server::privMsg(Command cmd, User *user, struct epoll_event event, int rc
 		
 		if (_users.find(cmd.getParameters()[0]) != _users.end())
 		{
-			//response = ":"+user->getNickname()+" "+cmd.getParameters()[0]+' '+cmd.getMsg()+"\r\n";
-			std::string s = cmd.getMsg();
-			//s.erase(std::find(s.begin(), s.end(), ':'));;
-			response = ":" + user->getNickname() + " " + cmd.getParameters()[0] + ' ' +  s ;
-
-			std::cout << "jsuisssssssssssssssssssssssssssssssssss la" << response << std::endl;
+			if (cmd.getMsg().compare(2,8, "DCC SEND") == 0) {
+				std::string s = cmd.getMsg() + "\r\n";
+				s.erase(std::find(s.begin(), s.end(), ':'));;
+				response = "PRIVMSG " + cmd.getParameters()[0] + " :" +  s ;
+			}
+			else
+				response = ":"+user->getNickname()+" "+cmd.getParameters()[0]+' '+cmd.getMsg()+"\r\n";
 			display(response, user);
 			display(response, (_users.find(cmd.getParameters()[0])->second));
-			
-			//std::cout<<"response =>"<<response<<std::endl;
 		}
 		else
 		{
