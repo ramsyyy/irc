@@ -6,7 +6,7 @@
 /*   By: raaga <raaga@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/02 06:27:10 by brhajji-          #+#    #+#             */
-/*   Updated: 2023/03/17 16:22:53 by raaga            ###   ########.fr       */
+/*   Updated: 2023/03/31 16:28:25 by raaga            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -205,11 +205,8 @@ void	Server::BuildServer()
 		// 	time_start = time(NULL);
 		// }
 		num_event = epoll_wait(this->_rc, events, num_socket, -1);
-		
 		for (int i = 0; i <= num_event; i++)
 		{
-			
-			//
 			if (events[i].data.fd == _server_socket && events[i].events == EPOLLIN) //si quelqu'un veut se connecter au serveur
 			{
 				add_user(_server_socket, this->_rc, &num_socket, events[i]);
@@ -217,10 +214,6 @@ void	Server::BuildServer()
 			}
 			else if (events[i].events == EPOLLIN)//si l'event concerne un user qu'on a deja ajouter a epoll
 			{
-				// for (std::map<std::string, User *>::iterator it = _users.begin(); it != _users.end(); it++) {
-				// 	if (events[i].events == EPOLLIN)
-				// 		tmp = recv(it->second->getFd(), buffer, sizeof(buffer), 0);
-				// }
 				tmp = recv(events[i].data.fd, buffer, sizeof(buffer), 0);
 
 				if (tmp <= 0)
@@ -410,20 +403,21 @@ int    Server::privMsg(Command cmd, User *user, struct epoll_event event, int rc
 		
 		if (_users.find(cmd.getParameters()[0]) != _users.end())
 		{
-			if (cmd.getMsg().compare(2,8, "DCC SEND") == 0) {
+				
+			  if (cmd.getMsg().compare(2,8, "DCC SEND") == 0) {
 				std::string s = cmd.getMsg() + "\r\n";
 				s.erase(std::find(s.begin(), s.end(), ':'));;
 				response = "PRIVMSG " + cmd.getParameters()[0] + " :" +  s ;
-			}
-			else
-				response = ":"+user->getNickname()+" "+cmd.getParameters()[0]+' '+cmd.getMsg()+"\r\n";
+			 }
+			 else {
+			 	response = user->getNickname()+' '+cmd.getMsg()+"\r\n";
+			 }
 			display(response, user);
 			display(response, (_users.find(cmd.getParameters()[0])->second));
 		}
 		else
 		{
 			response = ":localhost 401 "+user->getNickname()+" :No such Nickname\r\n";
-			std::cout << "jsuisssssssssssssppppppppppppppppppppppppppppppppppppppppppppppppppppppppssssssssssssssssssssss la " << response.c_str() << std::endl;
 			send((_users.find(cmd.getParameters()[0])->second)->getFd(), response.c_str(), response.length(), 0);
 			//std::cout<<"response =>"<<response<<std::endl;
 		}
