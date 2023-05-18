@@ -6,7 +6,7 @@
 /*   By: raaga <raaga@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/02 06:27:10 by brhajji-          #+#    #+#             */
-/*   Updated: 2023/03/31 16:28:25 by raaga            ###   ########.fr       */
+/*   Updated: 2023/05/16 20:51:22 by raaga            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,8 +39,9 @@ Server::~Server() {
 	std::cout << "-------------\nShutting down server.\n---------------------\n";
 	if (_server_socket > 0)
 		close(_server_socket);
-	for (std::map<std::string, User *>::iterator it = _users.begin(); it != _users.end(); it++)
+	for (std::map<std::string, User *>::iterator it = _users.begin(); it != _users.end(); it++) {
 		delete it->second;
+	}
 	for (std::map<std::string, Channel *>::iterator it = channels.begin(); it != channels.end(); it++)
 		delete it->second;
 	if (_rc > 0)
@@ -190,6 +191,7 @@ void	Server::BuildServer()
 	int num_socket = 1;
 	int num_event;
 	struct epoll_event events[100];
+	memset(&events, 0 , sizeof(events));
 	std::string	str;
 	size_t pos;
 	signal(SIGINT, Server::signal_handler);
@@ -208,10 +210,7 @@ void	Server::BuildServer()
 		for (int i = 0; i <= num_event; i++)
 		{
 			if (events[i].data.fd == _server_socket && events[i].events == EPOLLIN) //si quelqu'un veut se connecter au serveur
-			{
 				add_user(_server_socket, this->_rc, &num_socket, events[i]);
-				
-			}
 			else if (events[i].events == EPOLLIN)//si l'event concerne un user qu'on a deja ajouter a epoll
 			{
 				tmp = recv(events[i].data.fd, buffer, sizeof(buffer), 0);
@@ -222,7 +221,10 @@ void	Server::BuildServer()
 					//Suppresion du socket de l'epoll
 					epoll_ctl(this->_rc, EPOLL_CTL_DEL, events[i].data.fd, &events[i]);
 					if (get_user_by_fd(events[i].data.fd))
+					{
+						//delete get_user_by_fd(events[i].data.fd); 
 						_users.erase(get_user_by_fd(events[i].data.fd)->getNickname());
+					}
 					close(events[i].data.fd);
 					num_event--;
 				}
@@ -238,6 +240,7 @@ void	Server::BuildServer()
 					{
 						//std::cout<<"fd non reconnu "<<events[i].data.fd<<"\n";
 						user = new User(events[i].data.fd);
+			
  						state = 0;
 					}
 					else
@@ -251,7 +254,7 @@ void	Server::BuildServer()
 						int ii = execute_cmd(cmd, user, events[i], this->_rc, &num_event);
 					
 						if(ii == 0)
-							x = 0;
+							x = ii;
 					}
 					else
 					{
@@ -259,27 +262,20 @@ void	Server::BuildServer()
 						{
 							Command cmd(str.substr(0, pos - 1));
 							int yy = execute_cmd(cmd, user, events[i], this->_rc, &num_event);
-							
-							
 							if(yy == 0)
-								x = 0;
+								x = yy;
 							str.erase(0, pos + 1);
 						}
 					}
 					if (state == 0 && x == 0)
 					{
-						
-						_users.insert(std::pair<std::string, User *>(user->getNickname(), user));
-					
-					}
-					if (x == -1) {
-						delete user;
+						_users[user->getNickname()] = user;
 					}
 				}
 			}
 			
 		}
-	
+		
 		// if (std::time(0) % 30 == 0)
 		// {
 		// 	std::cout<<"Activity check.\n";
@@ -288,6 +284,8 @@ void	Server::BuildServer()
 		// }
 		// checkDeath(&num_event);
     }
+	
+	
 	(void) (num_socket);
 	
 }
@@ -320,7 +318,7 @@ int    Server::cap(Command cmd, User *user, struct epoll_event event, int rc, in
 			response = ":localhost:"+_portNum+" 004 "+user->getNickname()+"\r\n";
 			send(user->getFd(), response.c_str(), response.length(), 0);
 	}
-	return 1;
+	return 0;
 }
 
 int    Server::pass(Command cmd, User *user, struct epoll_event event, int rc, int *num_event) {
@@ -331,6 +329,7 @@ int    Server::pass(Command cmd, User *user, struct epoll_event event, int rc, i
 		send(user->getFd(), response.c_str(), response.length(), 0);
 		epoll_ctl(rc, EPOLL_CTL_DEL, user->getFd(), &event);
 		close(user->getFd());
+		//delete user;
 	}
 	else{
 		//std::cout << _tmp_fds[user->getFd()];
@@ -501,10 +500,11 @@ int    Server::quit(Command cmd, User *user, struct epoll_event event, int rc, i
    (void)cmd;
 	std::cout << "Connection closed by "<<user->getNickname() <<'\n';
 	epoll_ctl(rc, EPOLL_CTL_DEL, user->getFd(), &event);
-	_users.erase(user->getNickname());
+	
+	//_users.erase(user->getNickname());
 	close(event.data.fd);
 	(*num_event)--;
-	delete user;
+	// delete user;
 	return 1;
 }
 
