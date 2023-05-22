@@ -6,7 +6,7 @@
 /*   By: raaga <raaga@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/02 06:27:10 by brhajji-          #+#    #+#             */
-/*   Updated: 2023/05/16 20:51:22 by raaga            ###   ########.fr       */
+/*   Updated: 2023/05/22 18:07:13 by raaga            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,7 @@ Server::~Server() {
 	if (_server_socket > 0)
 		close(_server_socket);
 	for (std::map<std::string, User *>::iterator it = _users.begin(); it != _users.end(); it++) {
+		std::cout << "delete " << it->second->getNickname() << std::endl;
 		delete it->second;
 	}
 	for (std::map<std::string, Channel *>::iterator it = channels.begin(); it != channels.end(); it++)
@@ -200,12 +201,7 @@ void	Server::BuildServer()
 	// int time_tmp;
 	while (!g_signal)
 	{
-		//pingAll();
-		// time_tmp = time(NULL);
-		// if (time_tmp - time_start >= 30){
-		// 	bot();
-		// 	time_start = time(NULL);
-		// }
+
 		num_event = epoll_wait(this->_rc, events, num_socket, -1);
 		for (int i = 0; i <= num_event; i++)
 		{
@@ -234,30 +230,30 @@ void	Server::BuildServer()
 					User *user = NULL;
 					str = buffer;
 					int x = 1;
-					std::cout<<str<<std::endl;
+					std::cout<<str << " | : " <<std::endl;
 					//std::cout<<"<+++++++++++++++++++->"<<'\n'<<buffer<<"<+++++++++++++++++++>"<<'\n'<<'\n';
 					if (!get_user_by_fd(events[i].data.fd))
 					{
-						//std::cout<<"fd non reconnu "<<events[i].data.fd<<"\n";
-						user = new User(events[i].data.fd);
-			
- 						state = 0;
+						user = new User(events[i].data.fd);	
+						state = 0;	
 					}
 					else
 					{
-						state = 1;
 						user = get_user_by_fd(events[i].data.fd);
+						state = 1;
 					}
 					if (str.find("\r\n") == std::string::npos)
 					{
+					
 						Command cmd(str.substr(0, str.find('\n')));
 						int ii = execute_cmd(cmd, user, events[i], this->_rc, &num_event);
 					
 						if(ii == 0)
-							x = ii;
+							x = ii ;
 					}
 					else
 					{
+						
 						while ((pos = str.find('\n')) != std::string::npos)
 						{
 							Command cmd(str.substr(0, pos - 1));
@@ -269,20 +265,18 @@ void	Server::BuildServer()
 					}
 					if (state == 0 && x == 0)
 					{
-						_users[user->getNickname()] = user;
+
+						PRINT_LOG(user->getNickname());
+						_users.insert(std::pair<std::string, User *>(user->getNickname(), user));
 					}
+					else if (state == 0 && x != 0 && !get_user_by_fd(events[i].data.fd))
+						delete user;
+				
+					
 				}
 			}
 			
 		}
-		
-		// if (std::time(0) % 30 == 0)
-		// {
-		// 	std::cout<<"Activity check.\n";
-		// 	pingAll();
-		// 	current = std::time(0);
-		// }
-		// checkDeath(&num_event);
     }
 	
 	
@@ -318,7 +312,7 @@ int    Server::cap(Command cmd, User *user, struct epoll_event event, int rc, in
 			response = ":localhost:"+_portNum+" 004 "+user->getNickname()+"\r\n";
 			send(user->getFd(), response.c_str(), response.length(), 0);
 	}
-	return 0;
+	return -1;
 }
 
 int    Server::pass(Command cmd, User *user, struct epoll_event event, int rc, int *num_event) {
@@ -376,6 +370,7 @@ int    Server::nick(Command cmd, User *user, struct epoll_event event, int rc, i
 	std::string tmp = cmd.getParameters()[0];
 	while (_users.find(tmp) != _users.end())
 		tmp.insert(0,"_");
+	PRINT_WIN(tmp);
 	user->setNickname(tmp);
 	return 0;
 }
@@ -398,19 +393,35 @@ int    Server::privMsg(Command cmd, User *user, struct epoll_event event, int rc
 			sendToChan(cmd, user);
 	}
 	else if (cmd.getParameters().size() > 1 && cmd.getParameters()[0][0] != '#') //msg to user
-	{
-		
-		if (_users.find(cmd.getParameters()[0]) != _users.end())
+	{	
+		try {
+			User *tmp = this->_users.at(cmd.getParameters()[0]);
+			PRINT_WIN(tmp->getNickname());
+		}
+		catch (std::exception &e) {
+
+			PRINT_ERR(e.what());
+			PRINT_ERR(cmd.getParameters()[0]);
+			for (auto &x : this->_users) {
+				PRINT_WIN(x.first);
+				PRINT_LOG(x.second->getNickname());
+			}
+		}
+		std::cout << "justeeeeeeeeeeeeeeeeeeeeeeeeee la " << (_users.find(cmd.getParameters()[0]) == _users.end()) << std::endl;
+		for (std::map<std::string, User *>::iterator it = this->_users.begin(); it != this->_users.end(); it++) {
+			//send(it->second->getFd(), response.c_str(), response.length(), 0);
+			std::cout <<it->second->getNickname() << "|"  << cmd.getParameters()[0] << "|" << std::endl;
+	}
+		if (_users.begin()->second->getNickname() ==  cmd.getParameters()[0] || this->_users.find(cmd.getParameters()[0]) != _users.end())
 		{
-				
-			  if (cmd.getMsg().compare(2,8, "DCC SEND") == 0) {
+			if (cmd.getMsg().compare(2,8, "DCC SEND") == 0) {
 				std::string s = cmd.getMsg() + "\r\n";
 				s.erase(std::find(s.begin(), s.end(), ':'));;
 				response = "PRIVMSG " + cmd.getParameters()[0] + " :" +  s ;
-			 }
-			 else {
+			}
+			else {
 			 	response = user->getNickname()+' '+cmd.getMsg()+"\r\n";
-			 }
+			}
 			display(response, user);
 			display(response, (_users.find(cmd.getParameters()[0])->second));
 		}
@@ -418,7 +429,6 @@ int    Server::privMsg(Command cmd, User *user, struct epoll_event event, int rc
 		{
 			response = ":localhost 401 "+user->getNickname()+" :No such Nickname\r\n";
 			send((_users.find(cmd.getParameters()[0])->second)->getFd(), response.c_str(), response.length(), 0);
-			//std::cout<<"response =>"<<response<<std::endl;
 		}
 	}
 	return 1;

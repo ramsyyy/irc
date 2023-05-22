@@ -6,7 +6,7 @@
 #    By: abahmani <abahmani@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/01/13 02:16:29 by vahemere          #+#    #+#              #
-#    Updated: 2023/02/10 07:01:14 by abahmani         ###   ########.fr        #
+#    Updated: 2023/05/22 17:10:27 by raaga            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -23,7 +23,7 @@ OBJS = $(addprefix $(OBJS_DIR)/, $(SRCS:%.cpp=%.o))
 DEPS = $(OBJS:%.o=%.d)
 
 CC = c++
-CFLAGS = -Wall -Wextra -Werror -std=c++98 -g3 #-fsanitize=address
+CFLAGS = -Wall -Wextra -Werror -g3 #-fsanitize=address
 
 #fonts color
 BLACK =      \033[30m
