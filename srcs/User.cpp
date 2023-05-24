@@ -6,13 +6,13 @@
 /*   By: raaga <raaga@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/02 08:27:09 by brhajji-          #+#    #+#             */
-/*   Updated: 2023/03/09 16:28:42 by raaga            ###   ########.fr       */
+/*   Updated: 2023/05/24 18:24:30 by raaga            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/User.hpp"
 
-User::User(int fd) : fd(fd), _bot(false) , _op(false), _i(true), _w(false) , _op_chan(false), lastPong(std::time(0)), lastPing(std::time(0)), state(0)
+User::User(int fd) : fd(fd), _bot(false) , _op(false), _i(true), _w(false) , _op_chan(false), lastPong(std::time(0)), lastPing(std::time(0)), state(0), verif(false)
 {
 }
 

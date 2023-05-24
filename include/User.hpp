@@ -6,7 +6,7 @@
 /*   By: raaga <raaga@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/01/02 08:27:12 by brhajji-          #+#    #+#             */
-/*   Updated: 2023/03/03 16:16:24 by raaga            ###   ########.fr       */
+/*   Updated: 2023/05/24 18:18:54 by raaga            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,9 +35,11 @@ class User
 		time_t							lastPong;
 		time_t							lastPing;
 		int								state;
+		
 
 	public:
 		// Constructors
+		bool							verif;
 		User(int fd);
 
 		// Destructor
